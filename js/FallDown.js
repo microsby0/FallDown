@@ -22,43 +22,33 @@ $( document ).ready(function() { //intializing function
 
     //Gameplay category
     var score =0;
-    var left = false; var right = false;
+    var left = false;
+    var right = false;
     var isGameOver = false;
     var paused=false;
 
-    function moveRows(){
-        for(var i=0;i<onScreenRows.length;i++){
-            if(!paused){
-                onScreenRows[i].y-=1; //move row up
-            }
-            if(onScreenRows[i].y < -20){ //if row is off screen, remove from array
-                onScreenRows.splice(0, 1);
-            }
-        }
-    }
 
-    function gameOver(){
-        ctx.fillStyle="rgb(0,0,0)";
-        ctx.font = "40px Helvetica";
-        ctx.fillText("Game Over", 100,120); //be careful when changing canvas size
-
-        ctx.font = "30px Helvetica";
-        if(score<=10){
-            ctx.fillText("Did you even try?",85,170);
-        } else if (score <=20){
-            ctx.fillText("You should stick to pong",35,170);
-        } else{
-            ctx.fillText("Great Job!",130,170);
-        }
-    }
 
     function checkCollision(){
         dy=-3; //reset so it will fall if no longer on a platform
         for(var f=0;f<onScreenRows.length;f++){
-            if(yball+BALL_RADIUS <= onScreenRows[f].y+(BALL_RADIUS/2) && yball+BALL_RADIUS >= onScreenRows[f].y && //checks if at same y as row
-            !(xball-BALL_RADIUS > onScreenRows[f].spacex && xball+BALL_RADIUS < onScreenRows[f].spacex+SPACE_SIZE) ){  //checks if at same x as space
-            //added + half of radius to deal with mismatching starting point?
+            if(yball+BALL_RADIUS >= onScreenRows[f].y && yball+BALL_RADIUS <= onScreenRows[f].y+3 && //checks if at same y as row, range of 3 because of different speeds
+            (xball-BALL_RADIUS < onScreenRows[f].spacex || xball+BALL_RADIUS > onScreenRows[f].spacex+SPACE_SIZE) ){  //checks if at same x as space
                 dy=1;
+            }
+            if((yball+BALL_RADIUS >= onScreenRows[f].y+4 && yball+BALL_RADIUS <= onScreenRows[f].y+PLATFORM_HEIGHT) ||
+                (yball-BALL_RADIUS >= onScreenRows[f].y+4 && yball-BALL_RADIUS <= onScreenRows[f].y+PLATFORM_HEIGHT)){ //if ball is falling and moving left
+                if(xball-BALL_RADIUS <= onScreenRows[f].spacex && left){
+                        console.log("Back off");
+                        xball+=4;
+                }
+            }
+            if((yball+BALL_RADIUS >= onScreenRows[f].y+4 && yball+BALL_RADIUS <= onScreenRows[f].y+PLATFORM_HEIGHT) ||
+                (yball-BALL_RADIUS >= onScreenRows[f].y+4 && yball-BALL_RADIUS <= onScreenRows[f].y+PLATFORM_HEIGHT)){ //if ball is falling and moving left
+                if(xball-BALL_RADIUS <= onScreenRows[f].spacex && right){
+                        console.log("Back off");
+                        xball-=4;
+                }
             }
         }
     }
@@ -130,6 +120,16 @@ $( document ).ready(function() { //intializing function
         }
     }
 
+    function moveRows(){
+        for(var i=0;i<onScreenRows.length;i++){
+            if(!paused){
+                onScreenRows[i].y-=1; //move row up
+            }
+            if(onScreenRows[i].y < -20){ //if row is off screen, remove from array
+                onScreenRows.splice(0, 1);
+            }
+        }
+    }
 
     function drawBall(x,y,r){
         var a=Math.floor(Math.random()*255);
@@ -145,11 +145,15 @@ $( document ).ready(function() { //intializing function
     function moveBall(){
         yball-=dy;
         if(left){
-            if(xball-BALL_RADIUS >= 0)
+            if(xball-BALL_RADIUS >= 0){
+                console.log("Left");
                 xball-=4;
+            }
         } else if(right){
-            if(xball+BALL_RADIUS <= WIDTH)
+            if(xball+BALL_RADIUS <= WIDTH){
+                console.log("right");
                 xball+=4;
+            }
         }
         if(yball+BALL_RADIUS >= HEIGHT){ //Ball at the bottom
             yball=HEIGHT-BALL_RADIUS;
@@ -159,6 +163,21 @@ $( document ).ready(function() { //intializing function
     function checkGamerOver(){
         if(yball - BALL_RADIUS === 0){ //you lose
            isGameOver=true;
+        }
+    }
+
+    function gameOver(){
+        ctx.fillStyle="rgb(0,0,0)";
+        ctx.font = "40px Helvetica";
+        ctx.fillText("Game Over", 100,120); //be careful when changing canvas size
+
+        ctx.font = "30px Helvetica";
+        if(score<=10){
+            ctx.fillText("Did you even try?",85,170);
+        } else if (score <=20){
+            ctx.fillText("You should stick to pong",35,170);
+        } else{
+            ctx.fillText("Great Job!",130,170);
         }
     }
 
