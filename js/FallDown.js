@@ -4,9 +4,9 @@ $( document ).ready(function() { //intializing function
     var ctx = document.getElementById('canvas').getContext('2d');
     var HEIGHT = ctx.canvas.height;
     var WIDTH = ctx.canvas.width;
-    var PLATFORM_HEIGHT=20;
-    var BALL_RADIUS = 12;
-    var SPACE_SIZE = (BALL_RADIUS * 3) + 20;
+    var PLATFORM_HEIGHT=25;
+    var BALL_RADIUS = 11;
+    var SPACE_WIDTH = (BALL_RADIUS * 5);
 
     //Row variables
     var onScreenRows = [];
@@ -15,12 +15,14 @@ $( document ).ready(function() { //intializing function
     var first=true;
 
     //Ball variables
-    var xball=ctx.canvas.width/2;
-    var yball=BALL_RADIUS;
-    var dx=0;
+    var xball=ctx.canvas.width/2; //start in middle of canvas
+    var yball=BALL_RADIUS; //start at top of canvas
+    var ballTop=yball-BALL_RADIUS;
+    var ballBottom=yball+BALL_RADIUS;
+    var dx=4;
     var dy= -3;
 
-    //Gameplay category
+    //Gameplay variables
     var score =0;
     var left = false;
     var right = false;
@@ -28,32 +30,31 @@ $( document ).ready(function() { //intializing function
     var paused=false;
 
 
-
     function checkCollision(){
-        dy=-3; //reset so it will fall if no longer on a platform
         for(var f=0;f<onScreenRows.length;f++){
+            //Check if ball is sitting on a platform
             if(yball+BALL_RADIUS >= onScreenRows[f].y && yball+BALL_RADIUS <= onScreenRows[f].y+3 && //checks if at same y as row, range of 3 because of different speeds
-            (xball-BALL_RADIUS < onScreenRows[f].spacex || xball+BALL_RADIUS > onScreenRows[f].spacex+SPACE_SIZE) ){  //checks if at same x as space
+            (xball-BALL_RADIUS < onScreenRows[f].spacex || xball+BALL_RADIUS > onScreenRows[f].spacex+SPACE_WIDTH) ){  //checks if at same x as space
                 dy=1;
             }
-            if((yball+BALL_RADIUS >= onScreenRows[f].y+4 && yball+BALL_RADIUS <= onScreenRows[f].y+PLATFORM_HEIGHT) ||
+            //checks if ball is falling in a space by checking if top or bottom of ball is in between top and bottom of platform
+            else if((yball+BALL_RADIUS >= onScreenRows[f].y+4 && yball+BALL_RADIUS <= onScreenRows[f].y+PLATFORM_HEIGHT) ||
                 (yball-BALL_RADIUS >= onScreenRows[f].y+4 && yball-BALL_RADIUS <= onScreenRows[f].y+PLATFORM_HEIGHT)){ //if ball is falling and moving left
                 if(xball-BALL_RADIUS <= onScreenRows[f].spacex && left){
-                        console.log("Back off");
-                        xball+=4;
+                        dx=0;
+                }
+                if(xball+BALL_RADIUS >= onScreenRows[f].spacex+SPACE_WIDTH && right){
+                        dx=0;
                 }
             }
-            if((yball+BALL_RADIUS >= onScreenRows[f].y+4 && yball+BALL_RADIUS <= onScreenRows[f].y+PLATFORM_HEIGHT) ||
-                (yball-BALL_RADIUS >= onScreenRows[f].y+4 && yball-BALL_RADIUS <= onScreenRows[f].y+PLATFORM_HEIGHT)){ //if ball is falling and moving left
-                if(xball-BALL_RADIUS <= onScreenRows[f].spacex && right){
-                        console.log("Back off");
-                        xball-=4;
-                }
+            //checks if ball is on bottom of canvas
+            if(yball+BALL_RADIUS >= HEIGHT){
+                yball=HEIGHT-BALL_RADIUS;
             }
         }
     }
 
-    function draw(ctx){
+    function draw(){
         clear();
         if(isGameOver){
             gameOver();
@@ -64,20 +65,15 @@ $( document ).ready(function() { //intializing function
                 first=false;
                 counter=0;
             }
-
-            drawRows();
-
-            drawBall(xball,yball,BALL_RADIUS);
-
-            checkCollision();
-
-            moveRows();
-
-            moveBall();
-
-            checkGamerOver();
-
-            counter+=1;
+            if(!paused){
+                drawRows();
+                drawBall(xball,yball,BALL_RADIUS);
+                checkCollision();
+                moveRows();
+                moveBall();
+                checkGamerOver();
+                counter+=1;
+            }
         }
     }
 
@@ -91,18 +87,18 @@ $( document ).ready(function() { //intializing function
     }
 
     function addRow(){
-        var rand = Math.floor(Math.random()*(WIDTH-SPACE_SIZE)); //select a space starting point
+        var rand = Math.floor(Math.random()*(WIDTH-SPACE_WIDTH)); //select a space starting point
         while(rand==last){
-            rand = Math.floor(Math.random()*(WIDTH-SPACE_SIZE));
+            rand = Math.floor(Math.random()*(WIDTH-SPACE_WIDTH));
         }
         last=rand;
 
         if(last===0){
-            onScreenRows.push(new row(SPACE_SIZE,WIDTH-SPACE_SIZE,undefined,undefined,last));
-        } else if(last===WIDTH-SPACE_SIZE-1){
-            onScreenRows.push(new row(0,WIDTH-SPACE_SIZE,undefined,undefined,last));
+            onScreenRows.push(new row(SPACE_WIDTH,WIDTH-SPACE_WIDTH,undefined,undefined,last));
+        } else if(last===WIDTH-SPACE_WIDTH-1){
+            onScreenRows.push(new row(0,WIDTH-SPACE_WIDTH,undefined,undefined,last));
         } else{
-            onScreenRows.push(new row(0,last,last+SPACE_SIZE,WIDTH-SPACE_SIZE+last,last));
+            onScreenRows.push(new row(0,last,last+SPACE_WIDTH,WIDTH-SPACE_WIDTH+last,last));
         }
 
     }
@@ -132,9 +128,6 @@ $( document ).ready(function() { //intializing function
     }
 
     function drawBall(x,y,r){
-        var a=Math.floor(Math.random()*255);
-        var b=Math.floor(Math.random()*255);
-        var c=Math.floor(Math.random()*255);
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI*2, true);
         ctx.fillStyle="rgb(79,143,212)";
@@ -146,18 +139,15 @@ $( document ).ready(function() { //intializing function
         yball-=dy;
         if(left){
             if(xball-BALL_RADIUS >= 0){
-                console.log("Left");
-                xball-=4;
+                xball-=dx;
             }
         } else if(right){
             if(xball+BALL_RADIUS <= WIDTH){
-                console.log("right");
-                xball+=4;
+                xball+=dx;
             }
         }
-        if(yball+BALL_RADIUS >= HEIGHT){ //Ball at the bottom
-            yball=HEIGHT-BALL_RADIUS;
-        }
+        dx=4; //reset dx if there was a collision
+        dy=-3; //reset so it will fall if no longer on a platform
     }
 
     function checkGamerOver(){
@@ -218,7 +208,7 @@ $( document ).ready(function() { //intializing function
         }
     });
 
-    return setInterval(function(){draw(ctx);},10);
+    return setInterval(function(){draw();},10);
 });
 
 
