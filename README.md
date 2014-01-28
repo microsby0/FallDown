@@ -11,5 +11,4 @@ Soon to be implemented:
 
 -Touch interface
 -Better graphics
--increasing difficulty as you play
--Easy, Medium, Hard modes
+

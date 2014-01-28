@@ -1,6 +1,6 @@
 
 
-$( document ).ready(function() { //intializing function
+$( 'document' ).ready(function() { //intializing function
     var ctx = document.getElementById('canvas').getContext('2d');
     var HEIGHT = ctx.canvas.height;
     var WIDTH = ctx.canvas.width;
@@ -13,13 +13,12 @@ $( document ).ready(function() { //intializing function
     var last; //to stop repeated row types
     var counter=0; //counter for when to make new row
     var first=true;
+    var rowSprite = document.getElementById("row");
 
     //Ball variables
     var xball=ctx.canvas.width/2; //start in middle of canvas
     var yball=BALL_RADIUS; //start at top of canvas
-    var ballTop=yball-BALL_RADIUS;
-    var ballBottom=yball+BALL_RADIUS;
-    var dx=4;
+    var dx=3;
     var dy= -3;
 
     //Gameplay variables
@@ -29,30 +28,10 @@ $( document ).ready(function() { //intializing function
     var isGameOver = false;
     var paused=false;
 
-
-    function checkCollision(){
-        for(var f=0;f<onScreenRows.length;f++){
-            //Check if ball is sitting on a platform
-            if(yball+BALL_RADIUS >= onScreenRows[f].y && yball+BALL_RADIUS <= onScreenRows[f].y+3 && //checks if at same y as row, range of 3 because of different speeds
-            (xball-BALL_RADIUS < onScreenRows[f].spacex || xball+BALL_RADIUS > onScreenRows[f].spacex+SPACE_WIDTH) ){  //checks if at same x as space
-                dy=1;
-            }
-            //checks if ball is falling in a space by checking if top or bottom of ball is in between top and bottom of platform
-            else if((yball+BALL_RADIUS >= onScreenRows[f].y+4 && yball+BALL_RADIUS <= onScreenRows[f].y+PLATFORM_HEIGHT) ||
-                (yball-BALL_RADIUS >= onScreenRows[f].y+4 && yball-BALL_RADIUS <= onScreenRows[f].y+PLATFORM_HEIGHT)){ //if ball is falling and moving left
-                if(xball-BALL_RADIUS <= onScreenRows[f].spacex && left){
-                        dx=0;
-                }
-                if(xball+BALL_RADIUS >= onScreenRows[f].spacex+SPACE_WIDTH && right){
-                        dx=0;
-                }
-            }
-            //checks if ball is on bottom of canvas
-            if(yball+BALL_RADIUS >= HEIGHT){
-                yball=HEIGHT-BALL_RADIUS;
-            }
-        }
-    }
+    //Opening title for game
+    ctx.fillStyle="blue";
+    ctx.font = "40px Helvetica";
+    ctx.fillText("Press Space to Start", (WIDTH/2)-((ctx.measureText("Press Space to Start").width)/2),180);
 
     function draw(){
         clear();
@@ -65,14 +44,19 @@ $( document ).ready(function() { //intializing function
                 first=false;
                 counter=0;
             }
-            if(!paused){
+
                 drawRows();
                 drawBall(xball,yball,BALL_RADIUS);
+            if(!paused){
                 checkCollision();
                 moveRows();
                 moveBall();
                 checkGamerOver();
                 counter+=1;
+            } else{
+                ctx.fillStyle="red";
+            ctx.font = "40px Helvetica";
+            ctx.fillText("Paused", (WIDTH/2)-((ctx.measureText("Paused").width)/2),180);
             }
         }
     }
@@ -112,6 +96,7 @@ $( document ).ready(function() { //intializing function
             }
             ctx.closePath();
             ctx.fillStyle="rgb(0,0,0)";
+            //ctx.fillStyle=pattern;
             ctx.fill();
         }
     }
@@ -130,7 +115,7 @@ $( document ).ready(function() { //intializing function
     function drawBall(x,y,r){
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI*2, true);
-        ctx.fillStyle="rgb(79,143,212)";
+        ctx.fillStyle="blue";
         ctx.closePath();
         ctx.fill();
     }
@@ -146,9 +131,34 @@ $( document ).ready(function() { //intializing function
                 xball+=dx;
             }
         }
-        dx=4; //reset dx if there was a collision
+        dx=3; //reset dx if there was a collision
         dy=-3; //reset so it will fall if no longer on a platform
     }
+
+    function checkCollision(){
+        for(var f=0;f<onScreenRows.length;f++){
+            //Check if ball is sitting on a platform
+            if(yball+BALL_RADIUS >= onScreenRows[f].y && yball+BALL_RADIUS <= onScreenRows[f].y+3 && //checks if at same y as row, range of 3 because of different speeds
+            (xball-BALL_RADIUS < onScreenRows[f].spacex || xball+BALL_RADIUS > onScreenRows[f].spacex+SPACE_WIDTH) ){  //checks if at same x as space
+                dy=1;
+            }
+            //checks if ball is falling in a space by checking if top or bottom of ball is in between top and bottom of platform
+            else if((yball+BALL_RADIUS >= onScreenRows[f].y+4 && yball+BALL_RADIUS <= onScreenRows[f].y+PLATFORM_HEIGHT) ||
+                (yball-BALL_RADIUS >= onScreenRows[f].y+4 && yball-BALL_RADIUS <= onScreenRows[f].y+PLATFORM_HEIGHT)){ //if ball is falling and moving left
+                if(xball-BALL_RADIUS <= onScreenRows[f].spacex && left){
+                        dx=0;
+                }
+                if(xball+BALL_RADIUS >= onScreenRows[f].spacex+SPACE_WIDTH && right){
+                        dx=0;
+                }
+            }
+            //checks if ball is on bottom of canvas
+            if(yball+BALL_RADIUS >= HEIGHT){
+                yball=HEIGHT-BALL_RADIUS;
+            }
+        }
+    }
+
 
     function checkGamerOver(){
         if(yball - BALL_RADIUS === 0){ //you lose
@@ -159,15 +169,15 @@ $( document ).ready(function() { //intializing function
     function gameOver(){
         ctx.fillStyle="rgb(0,0,0)";
         ctx.font = "40px Helvetica";
-        ctx.fillText("Game Over", 100,120); //be careful when changing canvas size
+        ctx.fillText("Game Over", (WIDTH/2)-((ctx.measureText("Game Over").width)/2),120); //be careful when changing canvas size
 
         ctx.font = "30px Helvetica";
         if(score<=10){
-            ctx.fillText("Did you even try?",85,170);
+            ctx.fillText("Did you even try?",(WIDTH/2)-((ctx.measureText("Did you even try").width)/2),170);
         } else if (score <=20){
-            ctx.fillText("You should stick to pong",35,170);
+            ctx.fillText("You should stick to pong",(WIDTH/2)-((ctx.measureText("You should stick to pong").width)/2),170);
         } else{
-            ctx.fillText("Great Job!",130,170);
+            ctx.fillText("Great Job!",(WIDTH/2)-((ctx.measureText("Great Job").width)/2),170);
         }
     }
 
@@ -182,7 +192,7 @@ $( document ).ready(function() { //intializing function
 
     $(window).keypress(function(e) {
         if (e.keyCode === 32) { //if space bar is pressed
-
+            return setInterval(function(){draw();},10);
         } else if(e.keyCode === 13){ //enter key
             if(paused){
                 paused=false;
@@ -208,7 +218,7 @@ $( document ).ready(function() { //intializing function
         }
     });
 
-    return setInterval(function(){draw();},10);
+
 });
 
 
