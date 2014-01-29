@@ -31,7 +31,10 @@ $( 'document' ).ready(function() { //intializing function
     //Opening title for game
     ctx.fillStyle="blue";
     ctx.font = "40px Helvetica";
-    ctx.fillText("Press Space to Start", (WIDTH/2)-((ctx.measureText("Press Space to Start").width)/2),180);
+    ctx.fillText("Press Space to start", (WIDTH/2)-((ctx.measureText("Press Space to Start").width)/2),180);
+    ctx.fillStyle="black";
+    ctx.font = "30px Helvetica";
+    ctx.fillText("Press Enter to pause", (WIDTH/2)-((ctx.measureText("Press Space to Start").width)/2),230);
 
     function draw(){
         clear();
